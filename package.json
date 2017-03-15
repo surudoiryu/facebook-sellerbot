@@ -1,0 +1,24 @@
+{
+  "name": "bot-app",
+  "version": "1.0.0",
+  "description": "A rule based weather bot",
+  "scripts": {
+    "server": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "engines": {
+	"node": "6.2.1"
+  },
+  "dependencies": {
+    "moment": "2.13.0",
+    "request": "2.73.0",
+    "xregexp": "3.1.1",
+    "yql": "1.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "1.11.0",
+    "restify": "4.1.1"
+  }
+}
