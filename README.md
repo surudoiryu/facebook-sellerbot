@@ -18,3 +18,7 @@ Copy the Ngrok link and paste this in the App on Facebook as CallbackURL
 * Bye
 * What is the weather like in Zeist?
 * Will it snow tomorrow in Zeist?
+
+# Dependencies
+heroku.com
+ngrok
