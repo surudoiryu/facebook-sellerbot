@@ -1,25 +1,27 @@
 'use strict';
 
 const request = require('request');
+const crypto = require('crypto');
 
 class FBeamer {
 	constructor(config) {
 		try {
-			if(!config || config.PAGE_ACCESS_TOKEN === undefined || config.VERIFY_TOKEN === undefined) {
+			if(!config || config.PAGE_ACCESS_TOKEN === undefined || config.VERIFY_TOKEN === undefined || config.APP_SECRET === undefined) {
 				throw new Error("Unable to access tokens!");
 			} else {
 				this.PAGE_ACCESS_TOKEN = config.PAGE_ACCESS_TOKEN;
 				this.VERIFY_TOKEN = config.VERIFY_TOKEN;
+				this.APP_SECRET = config.APP_SECRET;
 			}
 		} catch(e) {
 			console.log(e);
 		}
 	}
-	
+
 	registerHook(req, res) {
 		// If mode is subscribe and token is the same then send back a 200 http-status
 		let {mode, verify_token, challenge} = req.query.hub;
-		
+
 		if(mode === 'subscribe' && verify_token === this.VERIFY_TOKEN) {
 			return res.end(challenge);
 		} else {
@@ -27,7 +29,27 @@ class FBeamer {
 			return res.status(403).end();
 		}
 	}
-	
+
+verifySignature(req, res, next) {
+	if(req.method === 'POST') {
+		let signature = req.headers['x-hub-signature'];
+		try {
+			if(!signature) {
+				throw new Error("Signature missing!");
+			} else {
+				let hash = crypto.createHmac('sha1', this.APP_SECRET).update(JSON.stringify(req.body)).digest('hex');
+				if(hash !== signature.split("=")[1]) {
+					throw  new Error("Invalid signature");
+				}
+			}
+		} catch(e) {
+			res.send(500, e);
+		}
+	}
+
+	return next();
+}
+
 	subscribe() {
 		request({
 			uri: 'https://graph.facebook.com/v2.8/me/subscribed_apps',
@@ -43,7 +65,7 @@ class FBeamer {
 			}
 		});
 	}
-	
+
 	incoming(req, res, cb) {
 		//Extract the body of the POST request
 		let data = req.body;
@@ -63,7 +85,7 @@ class FBeamer {
 		}
 		res.send(200);
 	}
-	
+
 	sendMessage(payload) {
 		return new Promise((resolve, reject) => {
 			//Create a HTTP POST request
@@ -85,7 +107,7 @@ class FBeamer {
 			});
 		});
 	}
-	
+
 	// Send a text message
 	txt(id, text) {
 		let obj = {
@@ -96,10 +118,10 @@ class FBeamer {
 				text
 			}
 		}
-		
+
 		this.sendMessage(obj).catch( error => console.log(error) );
 	}
-	
+
 	// Send an image message
 	img(id, url) {
 		let obj = {
@@ -115,7 +137,7 @@ class FBeamer {
 				}
 			}
 		}
-		
+
 		this.sendMessage(obj).catch( error => console.log(error) );
 	}
 }
