@@ -19,6 +19,15 @@ const config = require('./config');
 const FBeamer = require('./fbeamer');
 const f = new FBeamer(config.FB);
 
+// Wit.AI
+const Wit = require('node-wit').Wit;
+const wit = new Wit({
+	accessToken: config.WIT_ACCESS_TOKEN
+});
+
+//OMDB
+const omdb = require('./omdb');
+
 // VanillaMessenger
 const matcher = require('./matcher');
 const weather = require('./weather');
@@ -42,7 +51,7 @@ server.post('/', (req, res, next) => {
 		//f.img(msg.sender, `http://www.stickees.com/files/food/sweet/3543-icecream-cone-sticker.png`)
 		if(message.text) {
 			// If the received message is a text message
-			matcher(msg.message.text, data => {
+			matcher(message.text, data => {
 				switch(data.intent) {
 					case 'Hello':
 						f.txt(sender, `${data.entities.greeting} to you too!`);
@@ -69,7 +78,13 @@ server.post('/', (req, res, next) => {
 								f.txt(sender, "Hmm, something is not right with my brains. Please try again later.")
 							});
 						break;
+
 					default: {
+						wit.message(message.text, {})
+						.then(omdb)
+						.then(response => f.txt(sender, response))
+						.catch(error => f.txt(sender, "Gosh! I don't know George :( what do you mean?"));
+
 						f.txt(sender, "Gosh! I don't know George :( what do you mean?")
 					}
 				}
