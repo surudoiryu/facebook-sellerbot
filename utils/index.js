@@ -19,6 +19,27 @@ const createResponse = (intent, movie) => {
                     image: Poster
                 }
             }
+            case 'releaseYear': {
+                let str = `${Title} is uitgebracht in ${Year}.`;
+                return {
+                    text: str,
+                    image: null
+                }
+            }
+
+            case 'director': {
+                let str = `${Title} (${Year}) is geregisseerd door ${Director}`;
+                return {
+                    text: str,
+                    image: null
+                }
+            }
+            default: {
+                return {
+                    text: "Altijd van dienst :)",
+                    image: null
+                }
+            }
         }
     } else {
         return {

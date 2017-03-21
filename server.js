@@ -5,7 +5,7 @@ const restify = require('restify');
 const server = restify.createServer({
 	name: 'VanillaMessenger'
 });
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
 //
 server.use( restify.jsonp() );
@@ -89,7 +89,10 @@ server.post('/', (req, res, next) => {
 								f.img(sender, response.image);
 							}
 						})
-						.catch(error => f.txt(sender, "Gosh! I don't know George :( what do you mean?"+error));
+						.catch(error => {
+							console.log(error);
+							f.txt(sender, "Gosh! Ik weet het niet :( wat bedoel je?");
+						});
 					}
 				}
 			});
