@@ -5,7 +5,7 @@ const restify = require('restify');
 const server = restify.createServer({
 	name: 'VanillaMessenger'
 });
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 //
 server.use( restify.jsonp() );
@@ -83,14 +83,13 @@ server.post('/', (req, res, next) => {
 						wit.message(message.text, {})
 						.then(omdb)
 						.then(response => {
-							f.txt(sendser, response.text);
+							console.log("response: "+response);
+							f.txt(sender, response.text);
 							if(response.image){
 								f.img(sender, response.image);
 							}
 						})
-						.catch(error => f.txt(sender, "Gosh! I don't know George :( what do you mean?"));
-
-						f.txt(sender, "Gosh! I don't know George :( what do you mean?")
+						.catch(error => f.txt(sender, "Gosh! I don't know George :( what do you mean?"+error));
 					}
 				}
 			});

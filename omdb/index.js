@@ -4,6 +4,7 @@ const request = require('request');
 const createResponse = require('../utils');
 
 const getInfo = data => {
+    console.log(data.entities.movie[0].value);
     let intent = data.entities.intent && data.entities.intent[0].value || 'movieInfo';
     let movie = data.entities.movie && data.entities.movie[0].value || null;
     let releaseYear = data.entities.releaseYear && data.entities.releaseYear[0].value || null;
@@ -26,7 +27,6 @@ const getInfo = data => {
                     reject(error);
                 }
             });
-            resolve("Finding details about ${movie}");
         } else {
             reject("Entities not found");
         }
