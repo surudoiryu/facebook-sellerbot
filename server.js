@@ -82,7 +82,12 @@ server.post('/', (req, res, next) => {
 					default: {
 						wit.message(message.text, {})
 						.then(omdb)
-						.then(response => f.txt(sender, response))
+						.then(response => {
+							f.txt(sendser, response.text);
+							if(response.image){
+								f.img(sender, response.image);
+							}
+						})
 						.catch(error => f.txt(sender, "Gosh! I don't know George :( what do you mean?"));
 
 						f.txt(sender, "Gosh! I don't know George :( what do you mean?")
