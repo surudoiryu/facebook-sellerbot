@@ -14,7 +14,8 @@ paste in and save:
 		"PAGE_ACCESS_TOKEN": "facebook access token here",
 		"VERIFY_TOKEN": "facebook verify token here",
 		"APP_SECRET": "facebook app secret here"
-	}
+	},
+	MONGO_URI: "mongodb uri here"
 }
 ```
 
@@ -23,6 +24,8 @@ In terminal, console:
 npm install
 
 ./ngrok http 3000
+
+npm start
 ```
 
 Copy the Ngrok link and paste this in the App on Facebook as CallbackURL
@@ -40,9 +43,13 @@ Wanneer je dit uitprobeerd gelieve zo realistisch mogelijk vragen.
 * Vertel me meer over {filmnaam}
 * Wanneer was {filmnaam gereleased}?
 
+* Ik zoek een {kleur} {type hoesje} hoesje voor mijn {telefoon model}
+
 # Dependencies
 heroku.com
 ngrok
 wit.ai
+mlab.com
+facebook.com
 
 #test it out at https://www.facebook.com/SurudoiRyu-128597457665896/

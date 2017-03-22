@@ -19,11 +19,22 @@ const config = require('./config');
 const FBeamer = require('./fbeamer');
 const f = new FBeamer(config.FB);
 
+// MongoDB
+const mongodb = require('./mongodb')(f);
+
+// Sessions
+const session = require('./session');
+
+// WIT Actions
+const actions = require('./actions')(session, f, mongodb);
+
 // Wit.AI
 const Wit = require('node-wit').Wit;
 const wit = new Wit({
-	accessToken: config.WIT_ACCESS_TOKEN
+	accessToken: config.WIT_ACCESS_TOKEN,
+	actions
 });
+
 
 //OMDB
 const omdb = require('./omdb');
@@ -39,67 +50,71 @@ server.get('/', (req, res, next) => {
 	return next();
 });
 
-// Receive all incoming messages
-server.post('/', (req, res, next) => {
-	f.incoming(req, res, msg => {
-		// Process messages
-		const {
-			message,
-			sender
-		} = msg;
-		//f.txt(msg.sender, `Hey, you just said ${msg.message.text}`);
-		//f.img(msg.sender, `http://www.stickees.com/files/food/sweet/3543-icecream-cone-sticker.png`)
-		if(message.text) {
-			// If the received message is a text message
-			matcher(message.text, data => {
-				switch(data.intent) {
-					case 'Hello':
-						f.txt(sender, `${data.entities.greeting} to you too!`);
-						break;
-					case 'CurrentWeather':
-						weather(data.entities.city, 'current')
-							.then(response => {
-								let parseResult = currentWeather(response);
-								f.txt(sender, parseResult);
-							})
-							.catch(error => {
-								console.log("There seems to be a problem connecting to the weather service "+error);
-								f.txt(sender, "Hmm, something is not right with my brains. Please try again later.")
-							});
-						break;
-					case 'WeatherForecast':
-						weather(data.entities.city)
-							.then(response => {
-								let parseResult = forecastWeather(response, data.entities);
-								f.txt(sender, parseResult);
-							})
-							.catch(error => {
-								console.log("There seems to be a problem connecting to the weather service "+error);
-								f.txt(sender, "Hmm, something is not right with my brains. Please try again later.")
-							});
-						break;
 
-					default: {
-						wit.message(message.text, {})
-						.then(omdb)
-						.then(response => {
-							console.log("response: "+response);
-							f.txt(sender, response.text);
-							if(response.image){
-								f.img(sender, response.image);
-							}
-						})
-						.catch(error => {
-							console.log(error);
-							f.txt(sender, "Gosh! Ik weet het niet :( wat bedoel je?");
-						});
+if( mongodb.test() === (null||undefined) ){
+	// Check if we have connection with the database
+
+
+	// Receive all incoming messages
+	server.post('/', (req, res, next) => {
+		f.incoming(req, res, msg => {
+			// Process messages
+			const {
+				sender,
+				postback,
+				message
+			} = msg;
+
+			if(postback) {
+				const {
+					schedule,
+					fbid,
+					id
+				} = JSON.parse(postback.payload);
+
+			}
+
+			if(message.text) {
+				// process messages
+				let sessionId = session.init(sender);
+				let {context} = session.get(sessionId);
+
+				// wit actions
+				wit.runActions(sessionId, message.text, context)
+				.then(ctx => {
+					//delete session if conversation is over
+					//console.log(ctx);
+					if(ctx.jobDone) {
+						session.delete(sessionId)
+						mongodb.get(ctx.caseType, ctx.caseColor, ctx.phoneModel)
+							.then( x => {
+								let data = {
+									text: `${x[0].name} voor ${x[0].price}.`,
+									buttons: [{
+										type: 'postback',
+										title: 'Bestel Snel',
+										payload: `${x[0].link}`
+									}]
+								}
+								//console.log(data);
+
+								f.img(sender, x[0].image)
+								f.btn(sender, data);
+								//f.txt(sender, x[0].name+" voor "+ x[0].price +" bekijk het op: "+ x[0].link);
+
+							});
+					} else {
+						session.update(sessionId, ctx);
 					}
-				}
-			});
-		}
+				})
+				.catch(error => console.log(`Error: ${error}`));
+			}
+		});
+		return next();
 	});
-	return next();
-});
+} else {
+	console.log("We have no connection with the MongoDB anymore!");
+}
 
 // Auto subscribe the bot
 f.subscribe();
