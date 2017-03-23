@@ -83,11 +83,12 @@ if( mongodb.test() === (null||undefined) ){
 				wit.runActions(sessionId, message.text, context)
 				.then(ctx => {
 					//delete session if conversation is over
-					//console.log(ctx);
+					console.log(ctx);
 					if(ctx.jobDone) {
 						session.delete(sessionId)
 						mongodb.get(ctx.caseType, ctx.caseColor, ctx.phoneModel)
 							.then( x => {
+								console.log(x);
 								let data = {
 									text: `${x[0].name} voor ${x[0].price}.`,
 									buttons: [{

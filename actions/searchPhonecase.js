@@ -9,15 +9,16 @@ const searchPhonecase = (session, mongodb) => {
             let caseType = fetchEntity(entities, 'caseType');
             let caseColor = fetchEntity(entities, 'caseColor');
             let phoneModel = fetchEntity(entities, 'phoneModel');
-            console.log(`${caseType} - ${caseColor} - ${phoneModel}`);
+            console.log(`Old: ${caseType} - ${caseColor} - ${phoneModel}`);
+
+            console.log(context);
 
             let sessionObj = session.get(sessionId);
             if( sessionObj ) {
-                caseType = sessionObj.caseType || caseType;
-                caseColor = sessionObj.caseColor || caseColor;
-                phoneModel = sessionObj.phoneModel || phoneModel;
+                caseType = sessionObj.context.caseType || caseType;
+                caseColor = sessionObj.context.caseColor || caseColor;
+                phoneModel = sessionObj.context.phoneModel || phoneModel;
             }
-
 
             if(caseType) {
                 context.caseType = caseType;
@@ -40,18 +41,17 @@ const searchPhonecase = (session, mongodb) => {
                 context.missingPhonemodel = true;
             }
 
+            console.log(`New: ${caseType} - ${caseColor} - ${phoneModel}`);
+            console.log(`Missing: ${context.missingCasetype} - ${context.missingCasecolor} - ${context.missingPhonemodel}`);
+
             if(context.caseType && context.caseColor && context.phoneModel) {
-                delete context.missingCasetype;
-                delete context.missingCasecolor;
-                delete context.missingPhonemodel;
                 context.jobDone = true;
-                // Fetch fbid of the user
-                session.update(sessionId, context);
-                // Call mongodb to set data.
-                //console.log(context);
+            }else {
+                delete context.jobDone;
             }
             // get data with caseType, caseColor and phoneModel
-
+            console.log(context);
+            session.update(sessionId, context);
             // Call mongodb to store the data
             return resolve(context);
         })
