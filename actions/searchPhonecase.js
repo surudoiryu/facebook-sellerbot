@@ -10,6 +10,15 @@ const searchPhonecase = (session, mongodb) => {
             let caseColor = fetchEntity(entities, 'caseColor');
             let phoneModel = fetchEntity(entities, 'phoneModel');
             console.log(`${caseType} - ${caseColor} - ${phoneModel}`);
+
+            let sessionObj = session.get(sessionId);
+            if( sessionObj ) {
+                caseType = sessionObj.caseType || caseType;
+                caseColor = sessionObj.caseColor || caseColor;
+                phoneModel = sessionObj.phoneModel || phoneModel;
+            }
+
+
             if(caseType) {
                 context.caseType = caseType;
                 delete context.missingCasetype;
@@ -37,7 +46,7 @@ const searchPhonecase = (session, mongodb) => {
                 delete context.missingPhonemodel;
                 context.jobDone = true;
                 // Fetch fbid of the user
-                let {fbid} = session.get(sessionId);
+                session.update(sessionId, context);
                 // Call mongodb to set data.
                 //console.log(context);
             }
